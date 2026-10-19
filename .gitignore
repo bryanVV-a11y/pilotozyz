@@ -1,0 +1,4 @@
+# Respaldos y archivos personales
+*.json
+*.csv
+.env
