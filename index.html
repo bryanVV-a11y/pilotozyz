@@ -13,6 +13,28 @@
 </header>
 <nav id="tabs"></nav>
 <main id="list"></main>
+<section id="prog" hidden style="padding:8px 14px;max-width:640px;margin:0 auto">
+  <div class="card">
+    <label style="display:block;margin-bottom:10px">Vista
+      <select id="vis">
+        <option value="todos">Todos los días</option>
+        <option value="dia">Por día</option>
+      </select>
+    </label>
+    <label style="display:block;margin-bottom:10px">Ejercicio
+      <select id="ex"></select>
+    </label>
+    <label style="display:block;margin-bottom:10px">Medida
+      <select id="met">
+        <option value="max">Carga máxima (kg)</option>
+        <option value="vol">Volumen (kg × reps)</option>
+      </select>
+    </label>
+    <p class="mu" id="pmsg"></p>
+  </div>
+  <div class="card"><canvas id="grafica"></canvas></div>
+  <div class="card"><table id="tbl" style="width:100%;border-collapse:collapse;font-size:15px"></table></div>
+</section>
 <footer id="ft">
   <button id="xc">Exportar CSV</button>
   <button id="xj">Exportar JSON</button>
@@ -20,8 +42,12 @@
   <button id="un"></button>
   <button id="nw">Iniciar nueva semana</button>
   <button id="cl">Limpiar datos</button>
+  <button id="vp">Ver progreso</button>
 </footer>
 <div id="md" hidden><div class="bx"><p id="mt"></p><textarea id="mx" readonly></textarea><div class="ac" id="mb"></div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="app.js"></script>
+<script src="correcciones.js"></script>
+<script src="progreso.js"></script>
 </body>
 </html>

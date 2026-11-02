@@ -21,7 +21,7 @@ let cur={1:"lun",2:"mar",3:"mie",5:"vie",6:"sab"}[new Date().getDay()]||"lun";
 
 function fld(f,lb,v,st){return `<div><span>${lb}</span><div class="st"><button data-a="m" data-f="${f}" data-s="${st}">−</button><input type="number" inputmode="decimal" min="0" data-f="${f}" value="${v??""}"><button data-a="p" data-f="${f}" data-s="${st}">+</button></div></div>`}
 function tabs(){$("tabs").innerHTML=Object.keys(D).map(d=>`<button data-d="${d}" class="${d==cur?"on":""}">${D[d].n.slice(0,3)}<small>${cnt(d)}/${tot(d)}</small></button>`).join("")}
-function prog(){$("dn").textContent=D[cur].n;$("pg").textContent=cnt(cur)+" / "+tot(cur)+" series";tabs()}
+function prog(){$("dn").textContent=D[cur].n;$("pg").textContent="Semana "+S.wk+" · "+cnt(cur)+" / "+tot(cur)+" series";tabs()}
 function render(){
   let h="";
   if(ed)h+='<div class="note">Modo edición: cambia el nombre, mueve con ↑ ↓ o ajusta las series. Cada día se edita por separado (miércoles y sábado también).</div>';
