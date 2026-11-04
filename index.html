@@ -36,25 +36,28 @@
   <div class="card"><table id="tbl" style="width:100%;border-collapse:collapse;font-size:15px"></table></div>
 </section>
 
-<div id="panel" hidden>
-  <div class="grp">
-    <h3>Datos</h3>
-    <button id="xc">Exportar CSV</button>
-    <button id="xj">Exportar JSON</button>
-    <button id="im">Importar JSON</button>
+<div id="ov" hidden></div>
+<aside id="drawer">
+  <div id="dv-main">
+    <div class="dh"><span>Menú</span><button id="dclose" class="dx" aria-label="Cerrar">✕</button></div>
+    <button id="vp" class="drow">Ver progreso</button>
+    <button id="nw" class="drow">Iniciar nueva semana</button>
+    <button class="drow" data-sub="datos">Datos <span>›</span></button>
+    <button class="drow" data-sub="rutina">Rutina <span>›</span></button>
   </div>
-  <div class="grp">
-    <h3>Rutina</h3>
-    <button id="ed">Editar rutina</button>
-    <button id="un"></button>
-    <button id="cl">Limpiar datos</button>
+  <div id="dv-datos" hidden>
+    <div class="dh"><button class="back" data-back aria-label="Volver">‹</button><span>Datos</span></div>
+    <button id="xc" class="drow">Exportar CSV</button>
+    <button id="xj" class="drow">Exportar JSON</button>
+    <button id="im" class="drow">Importar JSON</button>
   </div>
-</div>
-
-<footer id="ft">
-  <button id="vp">Ver progreso</button>
-  <button id="nw">Iniciar nueva semana</button>
-</footer>
+  <div id="dv-rutina" hidden>
+    <div class="dh"><button class="back" data-back aria-label="Volver">‹</button><span>Rutina</span></div>
+    <button id="ed" class="drow">Editar rutina</button>
+    <button id="un" class="drow"></button>
+    <button id="cl" class="drow">Limpiar datos</button>
+  </div>
+</aside>
 
 <div id="md" hidden><div class="bx"><p id="mt"></p><textarea id="mx" readonly></textarea><div class="ac" id="mb"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
