@@ -34,3 +34,6 @@ HTML, CSS y JavaScript (piloto). Planeado: migrar a una versión con backend.
 ## Autor
 
 Bryan Valencia · [GitHub](https://github.com/bryanVV-a11y)
+## Usar la app
+
+https://bryanvv-a11y.github.io/pilotozyz/
