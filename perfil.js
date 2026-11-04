@@ -3,7 +3,7 @@
 
 const PKEY = 'perfil_v1';
 const ESPOTIFY = /^https:\/\/open\.spotify\.com\//;
-const ESOUNDCLOUD = /^https:\/\/(www\.|m\.)?soundcloud\.com\/.+/;
+const ESOUNDCLOUD = /^https:\/\/((www|m|on)\.)?soundcloud\.com\/.+/;
 let portadaIdx = null;
 
 function perfilVacio() {
@@ -70,7 +70,7 @@ async function datosSoundCloud(i) {
     c.portada = d.thumbnail_url || c.portada;
     guardarPerfil();
   } catch (e) {
-    modal('No pude traer los datos de esa canción. Revisa que sea pública o escríbelos a mano.', [['Cerrar']]);
+    modal('No pude traer los datos de esa canción. Si el enlace es corto (on.soundcloud.com), abre la canción, copia la dirección completa de la barra del navegador (soundcloud.com/artista/cancion) y pégala. Revisa también que sea pública.', [['Cerrar']]);
   }
   renderPerfil();
 }
@@ -104,6 +104,7 @@ function renderPerfil() {
         <input data-i="${i}" data-campo="artista" placeholder="Artista" value="${esc(c.artista)}">
         <input data-i="${i}" data-campo="link" placeholder="Enlace de SoundCloud o Spotify" value="${esc(c.link)}">
         <div class="fila">
+          ${ESOUNDCLOUD.test(c.link) ? `<button class="chip alt" data-traer="${i}">Traer datos</button>` : ''}
           <button class="chip" data-cov="${i}">Portada</button>
           <a class="chip alt" href="https://soundcloud.com/search/sounds?q=${q}" target="_blank" rel="noopener">Buscar en SoundCloud</a>
           <a class="chip alt" href="https://open.spotify.com/search/${q}" target="_blank" rel="noopener">Buscar en Spotify</a>
@@ -138,6 +139,12 @@ $('pf-fotoin').onchange = async ev => {
   guardarPerfil();
   renderPerfil();
 };
+
+// Botón Traer datos
+$('pf-cancs').addEventListener('click', ev => {
+  const t = ev.target.closest('[data-traer]');
+  if (t) datosSoundCloud(+t.dataset.traer);
+});
 
 // Portada de cada canción
 $('pf-cancs').addEventListener('click', ev => {
