@@ -3,6 +3,10 @@
 App de rutina de gimnasio que registra series, cargas y repeticiones, y te permite
 exportar tus datos. Está pensada para llevar un seguimiento simple de tus entrenos.
 
+## Usar la app
+
+https://bryanvv-a11y.github.io/pilotozyz/
+
 ## Estado del proyecto
 
 Fase piloto. La versión actual funciona en el navegador y guarda los datos localmente.
@@ -34,6 +38,3 @@ HTML, CSS y JavaScript (piloto). Planeado: migrar a una versión con backend.
 ## Autor
 
 Bryan Valencia · [GitHub](https://github.com/bryanVV-a11y)
-## Usar la app
-
-https://bryanvv-a11y.github.io/pilotozyz/
