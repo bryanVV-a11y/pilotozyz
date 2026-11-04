@@ -9,7 +9,7 @@
 </head>
 <body>
 <header id="top">
-  <div class="hd"><h1>Rutina · <span id="dn"></span></h1><span class="mu" id="pg"></span><button id="menu" class="mbtn" aria-label="Menú">☰</button></div>
+  <div class="hd"><h1>Rutina · <span id="dn"></span></h1><span class="mu" id="pg"></span><button id="perfilbtn" class="mbtn" aria-label="Perfil"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></button><button id="menu" class="mbtn" aria-label="Menú">☰</button></div>
 </header>
 <nav id="tabs"></nav>
 <main id="list"></main>
@@ -36,6 +36,28 @@
   <div class="card"><table id="tbl" style="width:100%;border-collapse:collapse;font-size:15px"></table></div>
 </section>
 
+<section id="perfil" hidden style="padding:8px 14px;max-width:640px;margin:0 auto">
+  <div class="card center">
+    <div id="pf-foto" class="avatar"></div>
+    <button id="pf-btnfoto" class="chip">Cambiar foto</button>
+    <input type="file" id="pf-fotoin" accept="image/*" style="display:none">
+    <label class="campo">Nombre
+      <input id="pf-nombre" maxlength="40" placeholder="Tu nombre">
+    </label>
+    <label class="campo">Descripción
+      <textarea id="pf-desc" maxlength="150" rows="2" placeholder="Algo sobre ti"></textarea>
+    </label>
+  </div>
+  <div class="card">
+    <h2 class="sub">Ejercicio favorito</h2>
+    <p id="pf-fav" class="mu"></p>
+  </div>
+  <div class="card">
+    <h2 class="sub">Mis 4 canciones para entrenar</h2>
+    <div id="pf-cancs"></div>
+    <input type="file" id="pf-portadain" accept="image/*" style="display:none">
+  </div>
+</section>
 <div id="ov" hidden></div>
 <aside id="drawer">
   <div id="dv-main">
@@ -66,5 +88,6 @@
 <script src="progreso.js"></script>
 <script src="importar.js"></script>
 <script src="menu.js"></script>
+<script src="perfil.js"></script>
 </body>
 </html>
