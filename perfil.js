@@ -3,6 +3,7 @@
 
 const PKEY = 'perfil_v1';
 const ESPOTIFY = /^https:\/\/open\.spotify\.com\//;
+const ESOUNDCLOUD = /^https:\/\/(www\.|m\.)?soundcloud\.com\/.+/;
 let portadaIdx = null;
 
 function perfilVacio() {
@@ -57,6 +58,23 @@ function favorito() {
   return top ? { nombre: top[0], n: top[1] } : null;
 }
 
+// Trae título, artista y portada desde SoundCloud (servicio oEmbed, público)
+async function datosSoundCloud(i) {
+  const c = perfil.canciones[i];
+  try {
+    const r = await fetch('https://soundcloud.com/oembed?format=json&url=' + encodeURIComponent(c.link.trim()));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    c.titulo = d.title || c.titulo;
+    c.artista = d.author_name || c.artista;
+    c.portada = d.thumbnail_url || c.portada;
+    guardarPerfil();
+  } catch (e) {
+    modal('No pude traer los datos de esa canción. Revisa que sea pública o escríbelos a mano.', [['Cerrar']]);
+  }
+  renderPerfil();
+}
+
 function renderPerfil() {
   $('pf-foto').innerHTML = perfil.foto
     ? `<img src="${perfil.foto}" alt="">`
@@ -67,21 +85,33 @@ function renderPerfil() {
   const f = favorito();
   $('pf-fav').textContent = f ? `${f.nombre} · ${f.n} series` : 'Aún no hay series registradas.';
 
-  $('pf-cancs').innerHTML = perfil.canciones.map((c, i) => `
+  $('pf-cancs').innerHTML = perfil.canciones.map((c, i) => {
+    const q = encodeURIComponent(`${c.titulo} ${c.artista}`.trim());
+    let extra = '';
+    if (ESOUNDCLOUD.test(c.link)) {
+      extra = `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(c.link.trim())}&auto_play=false&hide_related=true&visual=false" height="166" allow="autoplay"></iframe>
+               <a class="chip alt" href="${esc(c.link)}" target="_blank" rel="noopener">Abrir en SoundCloud</a>`;
+    } else if (ESPOTIFY.test(c.link)) {
+      extra = `<a class="chip" href="${esc(c.link)}" target="_blank" rel="noopener">Abrir en Spotify</a>`;
+    } else if (c.link) {
+      extra = `<span class="mu hint">Pon un enlace de soundcloud.com o open.spotify.com</span>`;
+    }
+    return `
     <div class="cancion">
-      <div class="thumb">${c.portada ? `<img src="${c.portada}" alt="">` : '♪'}</div>
+      <div class="thumb">${c.portada ? `<img src="${esc(c.portada)}" alt="">` : '♪'}</div>
       <div class="cf">
         <input data-i="${i}" data-campo="titulo" placeholder="Canción ${i + 1}" value="${esc(c.titulo)}">
         <input data-i="${i}" data-campo="artista" placeholder="Artista" value="${esc(c.artista)}">
-        <input data-i="${i}" data-campo="link" placeholder="Enlace de Spotify" value="${esc(c.link)}">
+        <input data-i="${i}" data-campo="link" placeholder="Enlace de SoundCloud o Spotify" value="${esc(c.link)}">
         <div class="fila">
           <button class="chip" data-cov="${i}">Portada</button>
-          ${c.link && ESPOTIFY.test(c.link)
-            ? `<a class="chip" href="${esc(c.link)}" target="_blank" rel="noopener">Abrir en Spotify</a>`
-            : `<span class="mu hint">${c.link ? 'Debe ser un enlace de open.spotify.com' : ''}</span>`}
+          <a class="chip alt" href="https://soundcloud.com/search/sounds?q=${q}" target="_blank" rel="noopener">Buscar en SoundCloud</a>
+          <a class="chip alt" href="https://open.spotify.com/search/${q}" target="_blank" rel="noopener">Buscar en Spotify</a>
         </div>
+        <div class="fila">${extra}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // Mostrar / ocultar la pantalla de perfil
@@ -135,7 +165,12 @@ $('perfil').addEventListener('input', ev => {
   guardarPerfil();
 });
 
-// Al salir de un campo se vuelve a dibujar (para revisar el enlace de Spotify)
-$('perfil').addEventListener('change', ev => {
-  if (ev.target.dataset.campo || ev.target.id === 'pf-nombre') renderPerfil();
+// Al salir de un campo: si pegaste un enlace de SoundCloud, se llenan los datos solos
+$('perfil').addEventListener('change', async ev => {
+  const t = ev.target;
+  if (t.dataset.campo === 'link' && ESOUNDCLOUD.test(t.value.trim())) {
+    await datosSoundCloud(+t.dataset.i);
+    return;
+  }
+  if (t.dataset.campo || t.id === 'pf-nombre') renderPerfil();
 });
