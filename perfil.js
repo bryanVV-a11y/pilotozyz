@@ -63,15 +63,29 @@ function favorito() {
   return top ? { nombre: top[0], n: top[1] } : null;
 }
 
+// Safari del iPhone bloquea fetch hacia Apple (CORS). Esta versión pide los datos
+// con una etiqueta <script>, que no tiene esa restricción, usando el parámetro callback.
+function buscarJsonp(q) {
+  return new Promise((ok, fail) => {
+    const cb = 'itunesCb' + Date.now();
+    const s = document.createElement('script');
+    const limpiar = () => { delete window[cb]; s.remove(); };
+    const t = setTimeout(() => { limpiar(); fail(new Error('tiempo agotado')); }, 8000);
+    window[cb] = d => { clearTimeout(t); limpiar(); ok(d); };
+    s.onerror = () => { clearTimeout(t); limpiar(); fail(new Error('no se pudo cargar desde Apple')); };
+    s.src = 'https://itunes.apple.com/search?media=music&entity=song&limit=5&callback=' + cb +
+            '&term=' + encodeURIComponent(q);
+    document.body.appendChild(s);
+  });
+}
+
 // Busca canciones en Apple Music (API pública de iTunes, sin clave)
 async function buscarCancion(i) {
   const q = (document.querySelector(`input[data-q="${i}"]`)?.value || '').trim();
   if (!q) return;
   consultas[i] = q;
   try {
-    const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&limit=5&term=' + encodeURIComponent(q));
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
+    const d = await buscarJsonp(q);
     resultados[i] = d.results || [];
     if (!resultados[i].length) modal('No encontré esa canción en Apple Music. Prueba con otro nombre o escríbela a mano.', [['Cerrar']]);
   } catch (e) {
