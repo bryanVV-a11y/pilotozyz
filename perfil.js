@@ -1,10 +1,15 @@
 /* Perfil local: foto, nombre, descripción, ejercicio favorito y top 4 canciones.
-   Se guarda en el navegador de este teléfono (clave perfil_v1), separado de tus registros. */
+   Las canciones se buscan en Apple Music (API pública de iTunes). Se guardan en el navegador
+   de este teléfono (clave perfil_v1), separado de tus registros. */
 
 const PKEY = 'perfil_v1';
-const ESPOTIFY = /^https:\/\/open\.spotify\.com\//;
-const ESOUNDCLOUD = /^https:\/\/((www|m|on)\.)?soundcloud\.com\/.+/;
+const EAPPLE = /^https:\/\/music\.apple\.com\/.+/;
 let portadaIdx = null;
+const editando = new Set();   // canciones cuyo enlace se está cambiando (no se guarda)
+const resultados = {};        // resultados de búsqueda por canción (no se guarda)
+const consultas = {};         // texto buscado por canción (no se guarda)
+
+const esValido = l => EAPPLE.test((l || '').trim());
 
 function perfilVacio() {
   return {
@@ -58,20 +63,35 @@ function favorito() {
   return top ? { nombre: top[0], n: top[1] } : null;
 }
 
-// Trae título, artista y portada desde SoundCloud (servicio oEmbed, público)
-async function datosSoundCloud(i) {
-  const c = perfil.canciones[i];
+// Busca canciones en Apple Music (API pública de iTunes, sin clave)
+async function buscarCancion(i) {
+  const q = (document.querySelector(`input[data-q="${i}"]`)?.value || '').trim();
+  if (!q) return;
+  consultas[i] = q;
   try {
-    const r = await fetch('https://soundcloud.com/oembed?format=json&url=' + encodeURIComponent(c.link.trim()));
+    const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&limit=5&term=' + encodeURIComponent(q));
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
-    c.titulo = d.title || c.titulo;
-    c.artista = d.author_name || c.artista;
-    c.portada = d.thumbnail_url || c.portada;
-    guardarPerfil();
+    resultados[i] = d.results || [];
+    if (!resultados[i].length) modal('No encontré esa canción en Apple Music. Prueba con otro nombre o escríbela a mano.', [['Cerrar']]);
   } catch (e) {
-    modal('No pude traer los datos de esa canción. Si el enlace es corto (on.soundcloud.com), abre la canción, copia la dirección completa de la barra del navegador (soundcloud.com/artista/cancion) y pégala. Revisa también que sea pública.', [['Cerrar']]);
+    modal('No pude buscar ahora. Revisa tu conexión e intenta otra vez.', [['Cerrar']]);
   }
+  renderPerfil();
+}
+
+// Al elegir un resultado se llenan título, artista, portada y enlace
+function elegirCancion(i, j) {
+  const t = resultados[i][j];
+  const c = perfil.canciones[i];
+  c.titulo = t.trackName || c.titulo;
+  c.artista = t.artistName || c.artista;
+  c.portada = (t.artworkUrl100 || '').replace('100x100bb', '300x300bb');
+  c.link = t.trackViewUrl || '';
+  delete resultados[i];
+  delete consultas[i];
+  editando.delete(i);
+  guardarPerfil();
   renderPerfil();
 }
 
@@ -86,30 +106,37 @@ function renderPerfil() {
   $('pf-fav').textContent = f ? `${f.nombre} · ${f.n} series` : 'Aún no hay series registradas.';
 
   $('pf-cancs').innerHTML = perfil.canciones.map((c, i) => {
-    const q = encodeURIComponent(`${c.titulo} ${c.artista}`.trim());
-    let extra = '';
-    if (ESOUNDCLOUD.test(c.link)) {
-      extra = `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(c.link.trim())}&auto_play=false&hide_related=true&visual=false" height="166" allow="autoplay"></iframe>
-               <a class="chip alt" href="${esc(c.link)}" target="_blank" rel="noopener">Abrir en SoundCloud</a>`;
-    } else if (ESPOTIFY.test(c.link)) {
-      extra = `<a class="chip" href="${esc(c.link)}" target="_blank" rel="noopener">Abrir en Spotify</a>`;
-    } else if (c.link) {
-      extra = `<span class="mu hint">Pon un enlace de soundcloud.com o open.spotify.com</span>`;
-    }
+    const bloqueado = esValido(c.link) && !editando.has(i);
+
+    const lista = (resultados[i] || []).map((t, j) => `
+      <button class="resultado" data-elegir="${i}:${j}">
+        <img src="${esc((t.artworkUrl100 || '').replace('100x100bb', '60x60bb'))}" alt="">
+        <span><b>${esc(t.trackName)}</b><small>${esc(t.artistName)}</small></span>
+      </button>`).join('');
+
+    const bloque = bloqueado
+      ? `<div class="fila">
+           <a class="chip" href="${esc(c.link.trim())}" target="_blank" rel="noopener">Abrir en Apple Music</a>
+           <button class="chip alt" data-cambiar="${i}">Cambiar</button>
+         </div>`
+      : `<div class="fila">
+           <input data-q="${i}" placeholder="Buscar canción en Apple Music" value="${esc(consultas[i] || '')}">
+           <button class="chip alt" data-buscar="${i}">Buscar</button>
+         </div>
+         <div class="resultados">${lista}</div>
+         <input data-i="${i}" data-campo="link" placeholder="o pega el enlace de Apple Music" value="${esc(c.link)}">
+         ${c.link && !esValido(c.link) ? '<span class="mu hint">Debe ser un enlace de music.apple.com</span>' : ''}`;
+
     return `
     <div class="cancion">
       <div class="thumb">${c.portada ? `<img src="${esc(c.portada)}" alt="">` : '♪'}</div>
       <div class="cf">
         <input data-i="${i}" data-campo="titulo" placeholder="Canción ${i + 1}" value="${esc(c.titulo)}">
         <input data-i="${i}" data-campo="artista" placeholder="Artista" value="${esc(c.artista)}">
-        <input data-i="${i}" data-campo="link" placeholder="Enlace de SoundCloud o Spotify" value="${esc(c.link)}">
+        ${bloque}
         <div class="fila">
-          ${ESOUNDCLOUD.test(c.link) ? `<button class="chip alt" data-traer="${i}">Traer datos</button>` : ''}
           <button class="chip" data-cov="${i}">Portada</button>
-          <a class="chip alt" href="https://soundcloud.com/search/sounds?q=${q}" target="_blank" rel="noopener">Buscar en SoundCloud</a>
-          <a class="chip alt" href="https://open.spotify.com/search/${q}" target="_blank" rel="noopener">Buscar en Spotify</a>
         </div>
-        <div class="fila">${extra}</div>
       </div>
     </div>`;
   }).join('');
@@ -140,19 +167,29 @@ $('pf-fotoin').onchange = async ev => {
   renderPerfil();
 };
 
-// Botón Traer datos
+// Botones dentro de las canciones
 $('pf-cancs').addEventListener('click', ev => {
-  const t = ev.target.closest('[data-traer]');
-  if (t) datosSoundCloud(+t.dataset.traer);
+  const t = ev.target;
+  const buscar = t.closest('[data-buscar]');
+  if (buscar) return buscarCancion(+buscar.dataset.buscar);
+  const elegir = t.closest('[data-elegir]');
+  if (elegir) {
+    const [i, j] = elegir.dataset.elegir.split(':').map(Number);
+    return elegirCancion(i, j);
+  }
+  const cambiar = t.closest('[data-cambiar]');
+  if (cambiar) {
+    editando.add(+cambiar.dataset.cambiar);
+    renderPerfil();
+    return;
+  }
+  const cov = t.closest('[data-cov]');
+  if (cov) {
+    portadaIdx = +cov.dataset.cov;
+    $('pf-portadain').click();
+  }
 });
 
-// Portada de cada canción
-$('pf-cancs').addEventListener('click', ev => {
-  const b = ev.target.closest('[data-cov]');
-  if (!b) return;
-  portadaIdx = +b.dataset.cov;
-  $('pf-portadain').click();
-});
 $('pf-portadain').onchange = async ev => {
   const f = ev.target.files[0];
   ev.target.value = '';
@@ -172,11 +209,12 @@ $('perfil').addEventListener('input', ev => {
   guardarPerfil();
 });
 
-// Al salir de un campo: si pegaste un enlace de SoundCloud, se llenan los datos solos
-$('perfil').addEventListener('change', async ev => {
+// Al salir de un campo: si el enlace es válido, se oculta y aparece "Cambiar"
+$('perfil').addEventListener('change', ev => {
   const t = ev.target;
-  if (t.dataset.campo === 'link' && ESOUNDCLOUD.test(t.value.trim())) {
-    await datosSoundCloud(+t.dataset.i);
+  if (t.dataset.campo === 'link') {
+    if (esValido(t.value)) editando.delete(+t.dataset.i);
+    renderPerfil();
     return;
   }
   if (t.dataset.campo || t.id === 'pf-nombre') renderPerfil();

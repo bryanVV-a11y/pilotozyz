@@ -81,3 +81,10 @@ select{width:100%;min-height:50px;background:var(--bg);border:1px solid var(--bd
 .sub{font-size:16px;margin:0 0 8px}
 .cf iframe{width:100%;border:0;border-radius:10px;margin-top:4px}
 .chip.alt{background:var(--c2);color:var(--tx);border:1px solid var(--bd)}
+.fila input{flex:1;min-width:0;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:8px;font:inherit;font-size:15px;min-height:40px}
+.resultados{display:flex;flex-direction:column;gap:6px}
+.resultado{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:6px;background:var(--c2);border:1px solid var(--bd);border-radius:10px;text-align:left}
+.resultado img{width:40px;height:40px;border-radius:6px;flex:0 0 40px;object-fit:cover}
+.resultado span{display:flex;flex-direction:column;min-width:0}
+.resultado b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.resultado small{color:var(--mu);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
