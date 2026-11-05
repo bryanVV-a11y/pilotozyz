@@ -75,7 +75,7 @@ async function buscarCancion(i) {
     resultados[i] = d.results || [];
     if (!resultados[i].length) modal('No encontré esa canción en Apple Music. Prueba con otro nombre o escríbela a mano.', [['Cerrar']]);
   } catch (e) {
-    modal('No pude buscar ahora. Revisa tu conexión e intenta otra vez.', [['Cerrar']]);
+    modal('No pude buscar ahora. Detalle: ' + (e && e.message ? e.message : 'sin detalle') + '. Si el detalle dice Failed to fetch, el teléfono está bloqueando la búsqueda; avísame el texto exacto.', [['Cerrar']]);
   }
   renderPerfil();
 }
