@@ -63,19 +63,20 @@ function favorito() {
   return top ? { nombre: top[0], n: top[1] } : null;
 }
 
-// Safari del iPhone bloquea fetch hacia Apple (CORS). Esta búsqueda usa una etiqueta <script>.
-function buscarJsonp(q) {
-  return new Promise((ok, fail) => {
-    const cb = 'itunesCb' + Date.now();
-    const s = document.createElement('script');
-    const limpiar = () => { delete window[cb]; s.remove(); };
-    const t = setTimeout(() => { limpiar(); fail(new Error('tiempo agotado')); }, 8000);
-    window[cb] = d => { clearTimeout(t); limpiar(); ok(d); };
-    s.onerror = () => { clearTimeout(t); limpiar(); fail(new Error('no se pudo cargar desde Apple')); };
-    s.src = 'https://itunes.apple.com/search?media=music&entity=song&limit=5&callback=' + cb +
-            '&term=' + encodeURIComponent(q);
-    document.body.appendChild(s);
-  });
+// Busca grabaciones en MusicBrainz (base abierta de música, sin clave).
+// Las portadas vienen de Cover Art Archive, que se cargan como imágenes normales.
+async function buscarMusicBrainz(q) {
+  const url = 'https://musicbrainz.org/ws/2/recording/?fmt=json&limit=5&query=' + encodeURIComponent(q);
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const d = await r.json();
+  return (d.recordings || []).map(g => ({
+    trackName: g.title || '',
+    artistName: (g['artist-credit'] || []).map(a => a.name).join(', '),
+    artworkUrl100: (g.releases && g.releases[0])
+      ? 'https://coverartarchive.org/release/' + g.releases[0].id + '/front-250' : '',
+    trackViewUrl: ''
+  }));
 }
 
 // Busca canciones en Apple Music
@@ -84,11 +85,10 @@ async function buscarCancion(i) {
   if (!q) return;
   consultas[i] = q;
   try {
-    const d = await buscarJsonp(q);
-    resultados[i] = d.results || [];
+    resultados[i] = await buscarMusicBrainz(q);
     if (!resultados[i].length) modal('No encontré esa canción en Apple Music. Prueba con otro nombre o escríbela a mano.', [['Cerrar']]);
   } catch (e) {
-    modal('No pude buscar ahora. Detalle: ' + (e && e.message ? e.message : 'sin detalle') + '. Puedes pegar el enlace de Apple Music directamente.', [['Cerrar']]);
+    modal('No pude buscar ahora. Detalle: ' + (e && e.message ? e.message : 'sin detalle') + '. Puedes escribir los datos a mano o usar En Apple Music.', [['Cerrar']]);
   }
   renderPerfil();
 }
@@ -100,7 +100,7 @@ function elegirCancion(i, j) {
   c.titulo = t.trackName || c.titulo;
   c.artista = t.artistName || c.artista;
   c.portada = (t.artworkUrl100 || '').replace('100x100bb', '300x300bb');
-  c.link = t.trackViewUrl || '';
+  if (t.trackViewUrl) c.link = t.trackViewUrl;
   delete resultados[i];
   delete consultas[i];
   abierta = null;
@@ -113,7 +113,7 @@ function panelCancion(i) {
   const c = perfil.canciones[i];
   const lista = (resultados[i] || []).map((t, j) => `
     <button class="resultado" data-elegir="${i}:${j}">
-      <img src="${esc((t.artworkUrl100 || '').replace('100x100bb', '60x60bb'))}" alt="">
+      <img src="${esc(t.artworkUrl100 || '')}" alt="" onerror="this.style.display='none'">
       <span><b>${esc(t.trackName)}</b><small>${esc(t.artistName)}</small></span>
     </button>`).join('');
 
@@ -123,6 +123,7 @@ function panelCancion(i) {
     <div class="fila">
       <input data-q="${i}" placeholder="Buscar en Apple Music" value="${esc(consultas[i] || '')}">
       <button class="chip alt" data-buscar="${i}">Buscar</button>
+      <a class="chip alt" href="https://music.apple.com/search?term=${encodeURIComponent(consultas[i] || '')}" target="_blank" rel="noopener">En Apple Music</a>
     </div>
     <div class="resultados">${lista}</div>
     <input data-i="${i}" data-campo="titulo" placeholder="Título" value="${esc(c.titulo)}">
@@ -150,7 +151,7 @@ function renderPerfil() {
     <div class="cc">
       <div class="cimg">
         <button class="cmenu" data-menu="${i}" aria-label="Opciones de la canción ${i + 1}">⋯</button>
-        ${c.portada ? `<img src="${esc(c.portada)}" alt="">` : '♪'}
+        ${c.portada ? `<img src="${esc(c.portada)}" alt="" onerror="this.style.display='none'">` : '♪'}
       </div>
       <div class="ctit">${c.titulo ? esc(c.titulo) : 'Canción ' + (i + 1)}</div>
       <div class="cart">${c.artista ? esc(c.artista) : 'Artista'}</div>
