@@ -1,11 +1,11 @@
 /* Perfil local: foto, nombre, descripción, ejercicio favorito y top 4 canciones.
-   Las canciones se buscan en Apple Music (API pública de iTunes). Se guardan en el navegador
-   de este teléfono (clave perfil_v1), separado de tus registros. */
+   Las canciones se buscan en Apple Music. Se guardan en el navegador de este teléfono
+   (clave perfil_v1), separado de tus registros. */
 
 const PKEY = 'perfil_v1';
 const EAPPLE = /^https:\/\/music\.apple\.com\/.+/;
 let portadaIdx = null;
-const editando = new Set();   // canciones cuyo enlace se está cambiando (no se guarda)
+let abierta = null;           // índice de la canción con el menú abierto (no se guarda)
 const resultados = {};        // resultados de búsqueda por canción (no se guarda)
 const consultas = {};         // texto buscado por canción (no se guarda)
 
@@ -63,8 +63,7 @@ function favorito() {
   return top ? { nombre: top[0], n: top[1] } : null;
 }
 
-// Safari del iPhone bloquea fetch hacia Apple (CORS). Esta versión pide los datos
-// con una etiqueta <script>, que no tiene esa restricción, usando el parámetro callback.
+// Safari del iPhone bloquea fetch hacia Apple (CORS). Esta búsqueda usa una etiqueta <script>.
 function buscarJsonp(q) {
   return new Promise((ok, fail) => {
     const cb = 'itunesCb' + Date.now();
@@ -79,7 +78,7 @@ function buscarJsonp(q) {
   });
 }
 
-// Busca canciones en Apple Music (API pública de iTunes, sin clave)
+// Busca canciones en Apple Music
 async function buscarCancion(i) {
   const q = (document.querySelector(`input[data-q="${i}"]`)?.value || '').trim();
   if (!q) return;
@@ -89,7 +88,7 @@ async function buscarCancion(i) {
     resultados[i] = d.results || [];
     if (!resultados[i].length) modal('No encontré esa canción en Apple Music. Prueba con otro nombre o escríbela a mano.', [['Cerrar']]);
   } catch (e) {
-    modal('No pude buscar ahora. Detalle: ' + (e && e.message ? e.message : 'sin detalle') + '. Si el detalle dice Failed to fetch, el teléfono está bloqueando la búsqueda; avísame el texto exacto.', [['Cerrar']]);
+    modal('No pude buscar ahora. Detalle: ' + (e && e.message ? e.message : 'sin detalle') + '. Puedes pegar el enlace de Apple Music directamente.', [['Cerrar']]);
   }
   renderPerfil();
 }
@@ -104,9 +103,37 @@ function elegirCancion(i, j) {
   c.link = t.trackViewUrl || '';
   delete resultados[i];
   delete consultas[i];
-  editando.delete(i);
+  abierta = null;
   guardarPerfil();
   renderPerfil();
+}
+
+// Menú desplegable de una canción
+function panelCancion(i) {
+  const c = perfil.canciones[i];
+  const lista = (resultados[i] || []).map((t, j) => `
+    <button class="resultado" data-elegir="${i}:${j}">
+      <img src="${esc((t.artworkUrl100 || '').replace('100x100bb', '60x60bb'))}" alt="">
+      <span><b>${esc(t.trackName)}</b><small>${esc(t.artistName)}</small></span>
+    </button>`).join('');
+
+  return `
+  <div class="cpanel">
+    <div class="fila"><b>Canción ${i + 1}</b><button class="chip alt" data-cerrar>Cerrar</button></div>
+    <div class="fila">
+      <input data-q="${i}" placeholder="Buscar en Apple Music" value="${esc(consultas[i] || '')}">
+      <button class="chip alt" data-buscar="${i}">Buscar</button>
+    </div>
+    <div class="resultados">${lista}</div>
+    <input data-i="${i}" data-campo="titulo" placeholder="Título" value="${esc(c.titulo)}">
+    <input data-i="${i}" data-campo="artista" placeholder="Artista" value="${esc(c.artista)}">
+    <input data-i="${i}" data-campo="link" placeholder="o pega el enlace de Apple Music" value="${esc(c.link)}">
+    ${c.link && !esValido(c.link) ? '<span class="mu hint">Debe ser un enlace de music.apple.com</span>' : ''}
+    <div class="fila">
+      <button class="chip" data-cov="${i}">Portada</button>
+      ${esValido(c.link) ? `<a class="chip alt" href="${esc(c.link.trim())}" target="_blank" rel="noopener">Abrir en Apple Music</a>` : ''}
+    </div>
+  </div>`;
 }
 
 function renderPerfil() {
@@ -119,41 +146,18 @@ function renderPerfil() {
   const f = favorito();
   $('pf-fav').textContent = f ? `${f.nombre} · ${f.n} series` : 'Aún no hay series registradas.';
 
-  $('pf-cancs').innerHTML = perfil.canciones.map((c, i) => {
-    const bloqueado = esValido(c.link) && !editando.has(i);
-
-    const lista = (resultados[i] || []).map((t, j) => `
-      <button class="resultado" data-elegir="${i}:${j}">
-        <img src="${esc((t.artworkUrl100 || '').replace('100x100bb', '60x60bb'))}" alt="">
-        <span><b>${esc(t.trackName)}</b><small>${esc(t.artistName)}</small></span>
-      </button>`).join('');
-
-    const bloque = bloqueado
-      ? `<div class="fila">
-           <a class="chip" href="${esc(c.link.trim())}" target="_blank" rel="noopener">Abrir en Apple Music</a>
-           <button class="chip alt" data-cambiar="${i}">Cambiar</button>
-         </div>`
-      : `<div class="fila">
-           <input data-q="${i}" placeholder="Buscar canción en Apple Music" value="${esc(consultas[i] || '')}">
-           <button class="chip alt" data-buscar="${i}">Buscar</button>
-         </div>
-         <div class="resultados">${lista}</div>
-         <input data-i="${i}" data-campo="link" placeholder="o pega el enlace de Apple Music" value="${esc(c.link)}">
-         ${c.link && !esValido(c.link) ? '<span class="mu hint">Debe ser un enlace de music.apple.com</span>' : ''}`;
-
-    return `
-    <div class="cancion">
-      <div class="thumb">${c.portada ? `<img src="${esc(c.portada)}" alt="">` : '♪'}</div>
-      <div class="cf">
-        <input data-i="${i}" data-campo="titulo" placeholder="Canción ${i + 1}" value="${esc(c.titulo)}">
-        <input data-i="${i}" data-campo="artista" placeholder="Artista" value="${esc(c.artista)}">
-        ${bloque}
-        <div class="fila">
-          <button class="chip" data-cov="${i}">Portada</button>
-        </div>
+  const tarjetas = perfil.canciones.map((c, i) => `
+    <div class="cc">
+      <div class="cimg">
+        <button class="cmenu" data-menu="${i}" aria-label="Opciones de la canción ${i + 1}">⋯</button>
+        ${c.portada ? `<img src="${esc(c.portada)}" alt="">` : '♪'}
       </div>
-    </div>`;
-  }).join('');
+      <div class="ctit">${c.titulo ? esc(c.titulo) : 'Canción ' + (i + 1)}</div>
+      <div class="cart">${c.artista ? esc(c.artista) : 'Artista'}</div>
+    </div>`).join('');
+
+  $('pf-cancs').innerHTML = `<div class="ctracks">${tarjetas}</div>` +
+    (abierta === null ? '' : panelCancion(abierta));
 }
 
 // Mostrar / ocultar la pantalla de perfil
@@ -164,7 +168,7 @@ $('perfilbtn').onclick = () => {
   $('tabs').style.display = abrir ? 'none' : '';
   $('prog').hidden = true;
   $('vp').textContent = 'Ver progreso';
-  if (abrir) { perfil = cargarPerfil(); renderPerfil(); scrollTo(0, 0); }
+  if (abrir) { perfil = cargarPerfil(); abierta = null; renderPerfil(); scrollTo(0, 0); }
 };
 
 // Si abres Ver progreso desde el menú, se oculta el perfil
@@ -181,21 +185,22 @@ $('pf-fotoin').onchange = async ev => {
   renderPerfil();
 };
 
-// Botones dentro de las canciones
+// Botones de las canciones
 $('pf-cancs').addEventListener('click', ev => {
   const t = ev.target;
+  const menu = t.closest('[data-menu]');
+  if (menu) {
+    const i = +menu.dataset.menu;
+    abierta = (abierta === i) ? null : i;
+    return renderPerfil();
+  }
+  if (t.closest('[data-cerrar]')) { abierta = null; return renderPerfil(); }
   const buscar = t.closest('[data-buscar]');
   if (buscar) return buscarCancion(+buscar.dataset.buscar);
   const elegir = t.closest('[data-elegir]');
   if (elegir) {
     const [i, j] = elegir.dataset.elegir.split(':').map(Number);
     return elegirCancion(i, j);
-  }
-  const cambiar = t.closest('[data-cambiar]');
-  if (cambiar) {
-    editando.add(+cambiar.dataset.cambiar);
-    renderPerfil();
-    return;
   }
   const cov = t.closest('[data-cov]');
   if (cov) {
@@ -223,13 +228,8 @@ $('perfil').addEventListener('input', ev => {
   guardarPerfil();
 });
 
-// Al salir de un campo: si el enlace es válido, se oculta y aparece "Cambiar"
+// Al salir de un campo se vuelve a dibujar
 $('perfil').addEventListener('change', ev => {
   const t = ev.target;
-  if (t.dataset.campo === 'link') {
-    if (esValido(t.value)) editando.delete(+t.dataset.i);
-    renderPerfil();
-    return;
-  }
   if (t.dataset.campo || t.id === 'pf-nombre') renderPerfil();
 });
