@@ -99,3 +99,11 @@ select{width:100%;min-height:50px;background:var(--bg);border:1px solid var(--bd
 .cpanel>input{display:block;width:100%;margin-bottom:8px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:8px;font:inherit;font-size:15px;min-height:40px}
 .cpanel .fila{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .cpanel .resultados{margin-bottom:8px}
+/* Pantalla de inicio (carga breve) */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;animation:spOut .45s ease 1s forwards}
+.sp-box{text-align:center}
+.sp-logo{font-family:Inter,-apple-system,"SF Pro Display",system-ui,sans-serif;font-weight:800;font-size:30px;letter-spacing:.32em;color:var(--tx);opacity:0;transform:translateY(8px);animation:spIn .5s ease .1s forwards;margin-right:-.32em}
+.sp-line{height:2px;width:0;margin:14px auto 0;background:var(--tx);animation:spLine .5s ease .35s forwards}
+@keyframes spIn{to{opacity:1;transform:none}}
+@keyframes spLine{to{width:72px}}
+@keyframes spOut{to{opacity:0;visibility:hidden}}
