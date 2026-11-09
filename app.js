@@ -4,12 +4,12 @@ const W=[["Extensión de cuádriceps",3,"0–1"],["Hack",2,"1–2"],["Curl femor
 const V=[["Elevaciones laterales en máquina",3,"0–1"],["Dominadas lastradas (+20 kg)",2,"1–2"],["Remo T",3,"1–2"],["Press inclinado en Smith",2,"1–2"],["Peck deck",2,"0–1"],["Peck deck inverso (hombro posterior)",2,"0–1"],["Curl alternado de pie",3,"0–1"],["Curl martillo",2,"0–1"],["Extensión de tríceps sobre la cabeza en polea",3,"0–1"],["Extensión Carter",2,"0–1"]];
 // El miércoles empieza con hombro y tríceps (frecuencia 3); el sábado repite solo la base de pierna
 const WX=[["Elevaciones laterales en máquina",3,"0–1"],["Extensión de tríceps en polea (pushdown)",3,"0–1"]];
-const D={lun:{n:"Lunes",x:L},mar:{n:"Martes",x:M},mie:{n:"Miércoles",x:WX.concat(W)},vie:{n:"Viernes",x:V},sab:{n:"Sábado",x:W}};
+const D={lun:{n:"Lunes",x:L},mar:{n:"Martes",x:M},mie:{n:"Miércoles",x:WX.concat(W)},jue:{n:"Jueves",x:[]},vie:{n:"Viernes",x:V},sab:{n:"Sábado",x:W},dom:{n:"Domingo",x:[]}};
 const K="rutina_v1",$=id=>document.getElementById(id);
 let S={wk:1,logs:{},hist:[]};
 try{Object.assign(S,JSON.parse(localStorage.getItem(K)||"{}"))}catch(e){}
 const mk=()=>{const p={};for(const d in D)p[d]=D[d].x.map((e,i)=>({id:String(i),n:e[0],s:e[1],r:e[2],t:e[3]||""}));return p};
-if(!S.plan)S.plan=mk();if(!S.u)S.u="kg";
+if(!S.plan)S.plan=mk();for(const d in D)if(!S.plan[d])S.plan[d]=[];if(!S.u)S.u="kg";
 for(const k in S.logs){const l=S.logs[k];if(!l.u&&(l.w||l.d))l.u=S.u}
 let ed=false;
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -20,9 +20,10 @@ const cnt=d=>Object.keys(S.logs).filter(k=>k.startsWith(d+"|")&&S.logs[k].d).len
 let cur={1:"lun",2:"mar",3:"mie",5:"vie",6:"sab"}[new Date().getDay()]||"lun";
 
 function fld(f,lb,v,st){return `<div><span>${lb}</span><div class="st"><button data-a="m" data-f="${f}" data-s="${st}">−</button><input type="number" inputmode="decimal" min="0" data-f="${f}" value="${v??""}"><button data-a="p" data-f="${f}" data-s="${st}">+</button></div></div>`}
-function tabs(){$("tabs").innerHTML=Object.keys(D).map(d=>`<button data-d="${d}" class="${d==cur?"on":""}">${D[d].n.slice(0,3)}<small>${cnt(d)}/${tot(d)}</small></button>`).join("")}
+function tabs(){$("tabs").innerHTML=diasActivos().map(d=>`<button data-d="${d}" class="${d==cur?"on":""}">${D[d].n.slice(0,3)}<small>${cnt(d)}/${tot(d)}</small></button>`).join("")}
 function prog(){$("dn").textContent=D[cur].n;$("pg").textContent="Semana "+S.wk+" · "+cnt(cur)+" / "+tot(cur)+" series";tabs()}
 function render(){
+  if(!diasActivos().includes(cur))cur=diasActivos()[0]||"lun";
   let h="";
   if(ed)h+='<div class="note">Modo edición: cambia el nombre, mueve con ↑ ↓ o ajusta las series. Cada día se edita por separado (miércoles y sábado también).</div>';
   S.plan[cur].forEach(e=>{
