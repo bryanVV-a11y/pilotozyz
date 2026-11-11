@@ -30,10 +30,10 @@ function render(){
     if(ed){
       h+=`<section class="card" data-id="${e.id}"><div class="ed"><input data-a="nm" value="${esc(e.n)}" aria-label="Nombre"><button data-a="up" aria-label="Subir">↑</button><button data-a="dn" aria-label="Bajar">↓</button></div><div class="sc"><span class="mu">Series</span><button data-a="sm">−</button><b>${e.s}</b><button data-a="sp">+</button><span class="mu">RIR ${e.r}</span></div></section>`;return;
     }
-    h+=`<section class="card"><h2>${esc(e.n)}</h2><p class="mu">${e.s} series · RIR ${e.r}${e.t?" · "+e.t:""}</p>`;
+    h+=`<section class="card"><h2>${esc(e.n)}</h2><p class="mu">${e.s} series${e.r?" · RIR "+e.r:""}${e.t?" · "+e.t:""}</p>`;
     for(let s=0;s<e.s;s++){
       const k=cur+"|"+e.id+"|"+s,l=S.logs[k]||{},u=l.u||S.u,st=u=="kg"?2.5:5;
-      h+=`<div class="row${l.d?" done":""}" data-k="${k}"><div class="rt"><span>Serie ${s+1}</span><small>Target: RIR ${e.r}</small><button class="ck" data-a="ck" aria-label="Marcar completada">${l.d?"✓":""}</button></div><div class="fl">${fld("w",`Carga <button class="ub" data-a="u" aria-label="Cambiar unidad">${u}</button>`,l.w,st)}${fld("r","Reps",l.r,1)}<div><span>RIR real</span><select data-f="q">${["","0","1","2","3","4","5+"].map(o=>`<option value="${o}"${(l.q||"")===o?" selected":""}>${o||"—"}</option>`).join("")}</select></div></div></div>`;
+      h+=`<div class="row${l.d?" done":""}" data-k="${k}"><div class="rt"><span>Serie ${s+1}</span><small>Target</small><button class="ck" data-a="ck" aria-label="Marcar completada">${l.d?"✓":""}</button></div><div class="fl">${fld("w",`Carga <button class="ub" data-a="u" aria-label="Cambiar unidad">${u}</button>`,l.w,st)}${fld("r","Reps",l.r,1)}<div><span>RIR real</span><select data-f="q">${["","0","1","2","3","4","5+"].map(o=>`<option value="${o}"${(l.q||"")===o?" selected":""}>${o||"—"}</option>`).join("")}</select></div></div></div>`;
     }
     h+="</section>";
   });

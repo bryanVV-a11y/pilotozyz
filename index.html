@@ -73,6 +73,13 @@
     <button id="ini-cancel">Cancelar</button>
   </div>
 </section>
+<section id="biblio" hidden>
+  <div class="bib">
+    <div id="bib-lista"></div>
+    <div id="bib-detalle" hidden></div>
+    <button id="bib-cancel">Cerrar</button>
+  </div>
+</section>
 <div id="ov" hidden></div>
 <aside id="drawer">
   <div id="dv-main">
@@ -92,6 +99,7 @@
     <div class="dh"><button class="back" data-back aria-label="Volver">‹</button><span>Rutina</span></div>
     <button id="ed" class="drow">Editar rutina</button>
     <button id="un" class="drow"></button>
+    <button id="elegirrutina" class="drow">Elegir rutina</button>
     <button id="cambiardias" class="drow">Días de entreno</button>
     <button id="cl" class="drow">Limpiar datos</button>
   </div>
@@ -106,6 +114,9 @@
 <script src="importar.js"></script>
 <script src="menu.js"></script>
 <script src="perfil.js"></script>
-<script>iniciarInicio();</script>
+<script src="catalogo.js"></script>
+<script src="rutinas.js"></script>
+<script src="biblioteca.js"></script>
+<script>iniciarInicio();iniciarBiblioteca();</script>
 </body>
 </html>

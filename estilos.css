@@ -120,3 +120,15 @@ select{width:100%;min-height:50px;background:var(--bg);border:1px solid var(--bd
 #ini-ok:disabled{opacity:.4}
 #ini-cancel{margin-top:10px;background:transparent;border:0;color:var(--mu);min-height:44px;width:100%}
 #ini-cancel[hidden]{display:none}
+/* Biblioteca de rutinas */
+#biblio{position:fixed;inset:0;background:var(--bg);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+#biblio[hidden]{display:none}
+.bib{width:100%;max-width:480px;padding-top:20px}
+.rcard{display:flex;flex-direction:column;align-items:flex-start;width:100%;margin-bottom:10px;padding:14px;text-align:left;background:var(--c2);border:1px solid var(--bd);border-radius:14px}
+.rcard b{font-size:17px}
+.rcard small{color:var(--mu);margin-top:4px}
+.bl{list-style:none;padding:0;margin:12px 0;text-align:left}
+.bl li{padding:10px 0;border-bottom:1px solid var(--bd)}
+#bib-aplicar{width:100%;min-height:52px;background:var(--tx);color:#000;border:0;border-radius:14px;font-weight:700;margin-top:8px}
+#bib-volver,#bib-cancel{width:100%;min-height:48px;margin-top:8px;background:transparent;border:0;color:var(--mu)}
+#bib-detalle[hidden],#bib-lista[hidden]{display:none}

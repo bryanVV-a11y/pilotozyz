@@ -67,6 +67,7 @@ function iniciarInicio() {
     $('inicio').hidden = true;
     render();
     ub();
+    if (!S.rutina) abrirBiblioteca();
   };
 
   $('ini-cancel').onclick = () => { $('inicio').hidden = true; };
