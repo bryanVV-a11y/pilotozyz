@@ -20,8 +20,8 @@ const cnt=d=>Object.keys(S.logs).filter(k=>k.startsWith(d+"|")&&S.logs[k].d).len
 let cur={1:"lun",2:"mar",3:"mie",5:"vie",6:"sab"}[new Date().getDay()]||"lun";
 
 function fld(f,lb,v,st){return `<div><span>${lb}</span><div class="st"><button data-a="m" data-f="${f}" data-s="${st}">−</button><input type="number" inputmode="decimal" min="0" data-f="${f}" value="${v??""}"><button data-a="p" data-f="${f}" data-s="${st}">+</button></div></div>`}
-function tabs(){$("tabs").innerHTML=diasActivos().map(d=>`<button data-d="${d}" class="${d==cur?"on":""}">${D[d].n.slice(0,3)}<small>${cnt(d)}/${tot(d)}</small></button>`).join("")}
-function prog(){$("dn").textContent=D[cur].n;$("pg").textContent="Semana "+S.wk+" · "+cnt(cur)+" / "+tot(cur)+" series";tabs()}
+function tabs(){$("tabs").innerHTML=diasActivos().map(d=>`<button data-d="${d}" class="${d==cur?"on":""}">${D[d].n.slice(0,3)}<small>${S.rutina?cnt(d)+"/"+tot(d):"0/0"}</small></button>`).join("")}
+function prog(){const v=!!S.rutina;$("dn").textContent=v?D[cur].n:"Escoger rutina";$("pg").textContent="Semana "+S.wk+" · "+(v?cnt(cur)+" / "+tot(cur):"0 / 0")+" series";tabs()}
 function render(){
   if(!diasActivos().includes(cur))cur=diasActivos()[0]||"lun";
   if(!S.rutina){$("list").innerHTML='<section class="vacio"><h2>Sin rutina todavía</h2><p class="mu">Escoge una rutina popular o crea la tuya.</p><button class="pri" data-go="biblio">Escoge o personaliza tu rutina</button><button class="sec" data-go="biblio">Comenzar</button></section>';prog();return}
