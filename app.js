@@ -24,6 +24,7 @@ function tabs(){$("tabs").innerHTML=diasActivos().map(d=>`<button data-d="${d}" 
 function prog(){$("dn").textContent=D[cur].n;$("pg").textContent="Semana "+S.wk+" · "+cnt(cur)+" / "+tot(cur)+" series";tabs()}
 function render(){
   if(!diasActivos().includes(cur))cur=diasActivos()[0]||"lun";
+  if(!S.rutina){$("list").innerHTML='<section class="vacio"><h2>Sin rutina todavía</h2><p class="mu">Escoge una rutina popular o crea la tuya.</p><button class="pri" data-go="biblio">Escoge o personaliza tu rutina</button><button class="sec" data-go="biblio">Comenzar</button></section>';prog();return}
   let h="";
   if(ed)h+='<div class="note">Modo edición: cambia el nombre, mueve con ↑ ↓ o ajusta las series. Cada día se edita por separado (miércoles y sábado también).</div>';
   S.plan[cur].forEach(e=>{

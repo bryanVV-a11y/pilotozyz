@@ -231,6 +231,9 @@ function abrirBiblioteca() {
 function iniciarBiblioteca() {
   $('elegirrutina').onclick = abrirBiblioteca;
   $('bib-cancel').onclick = () => { $('biblio').hidden = true; };
+  $('list').addEventListener('click', ev => {
+    if (ev.target.closest('[data-go="biblio"]')) abrirBiblioteca();
+  });
 
   $('biblio').addEventListener('input', ev => {
     if (ev.target.id === 'bq' && B) { B.buscar = ev.target.value; pintarResultados(); }
