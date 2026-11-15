@@ -148,3 +148,14 @@ select{width:100%;min-height:50px;background:var(--bg);border:1px solid var(--bd
 .vacio{text-align:center;padding:40px 10px}
 .vacio h2{font-size:22px;margin:0 0 8px}
 .vacio .pri,.vacio .sec{max-width:360px;margin-left:auto;margin-right:auto}
+/* Fondo con brillo verde en la parte inferior (estilo Northline) */
+:root{--glow:139,92,246}
+body:has(#prog:not([hidden])){--glow:198,244,50}
+html{background:var(--bg)}
+body{background:transparent;position:relative}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 105%, rgba(var(--glow),.28), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(var(--glow),.05) 0 1px, transparent 1px 34px);
+}
