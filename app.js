@@ -26,6 +26,7 @@ S.rutina={nombre:"Mi rutina",adaptada:""};
 else if(!S.rutina&&Object.values(S.plan).some(p=>p.length))S.rutina={nombre:"Mi rutina",adaptada:""};
 for(const k in S.logs){const l=S.logs[k];if(!l.u&&(l.w||l.d))l.u=S.u}
 let ed=false;
+let addOpen=false;
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
 const today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
@@ -43,7 +44,7 @@ function render(){
   if(ed)h+='<div class="note">Modo edición: cambia el nombre, mueve con ↑ ↓ o ajusta las series. Cada día se edita por separado (miércoles y sábado también).</div>';
   S.plan[cur].forEach(e=>{
     if(ed){
-      h+=`<section class="card" data-id="${e.id}"><div class="ed"><input data-a="nm" value="${esc(e.n)}" aria-label="Nombre"><button data-a="up" aria-label="Subir">↑</button><button data-a="dn" aria-label="Bajar">↓</button></div><div class="sc"><span class="mu">Series</span><button data-a="sm">−</button><b>${e.s}</b><button data-a="sp">+</button><span class="mu">RIR ${e.r}</span></div></section>`;return;
+      h+=`<section class="card" data-id="${e.id}"><div class="ed"><input data-a="nm" value="${esc(e.n)}" aria-label="Nombre"><button data-a="up" aria-label="Subir">↑</button><button data-a="dn" aria-label="Bajar">↓</button></div><div class="sc"><span class="mu">Series</span><button data-a="sm">−</button><b>${e.s}</b><button data-a="sp">+</button><span class="mu">RIR ${e.r}</span><button data-a="del" class="mini">Quitar</button></div></section>`;return;
     }
     h+=`<section class="card"><h2>${esc(e.n)}</h2><p class="mu">${e.s} series${e.r?" · RIR "+e.r:""}${e.t?" · "+e.t:""}</p>`;
     for(let s=0;s<e.s;s++){
@@ -52,10 +53,12 @@ function render(){
     }
     h+="</section>";
   });
+  if(ed)h+=addOpen?'<section class="card"><h2>Nuevo ejercicio</h2><input id="nex-n" class="busq" placeholder="Nombre del ejercicio"><div class="srow"><span>Series</span><input id="nex-s" type="number" min="1" max="10" value="3" class="busq" style="width:90px"></div><input id="nex-r" class="busq" placeholder="Repeticiones (ej. 8-12)"><input id="nex-d" class="busq" placeholder="Descanso (ej. 90 seg)"><button class="pri" data-a="saveEx">Guardar ejercicio</button><button class="cerrar" data-a="cancelEx">Cancelar</button></section>':'<button class="pri" data-a="addEx">+ Agregar ejercicio</button>';
   $("list").innerHTML=h;prog();
 }
 function edit(a,id){
   const L=S.plan[cur],i=L.findIndex(e=>e.id==id),e=L[i];if(!e)return;
+  if(a=="del")return ask("¿Quitar «"+e.n+"» de este día? Lo que ya registraste se conserva en el historial.",()=>{L.splice(i,1);save();render()});
   if(a=="up"&&i>0)[L[i-1],L[i]]=[L[i],L[i-1]];
   else if(a=="dn"&&i<L.length-1)[L[i+1],L[i]]=[L[i],L[i+1]];
   else if(a=="sp"&&e.s<10)e.s++;
@@ -70,6 +73,18 @@ function edit(a,id){
 $("list").addEventListener("click",ev=>{
   const b=ev.target.closest("button[data-a]");if(!b)return;
   const a=b.dataset.a;
+  if(a=="addEx"){addOpen=true;render();return}
+  if(a=="cancelEx"){addOpen=false;render();return}
+  if(a=="saveEx"){
+    const n=$("nex-n").value.trim();
+    if(!n)return modal("Escribe el nombre del ejercicio.",[["Cerrar"]]);
+    const s=Math.min(10,Math.max(1,+$("nex-s").value||3));
+    const LN=S.plan[cur];
+    const nid=String(Math.max(-1,...LN.map(x=>+x.id))+1);
+    const reps=$("nex-r").value.trim(), des=$("nex-d").value.trim();
+    LN.push({id:nid,n:n,s:s,r:"",t:[reps?reps+" reps":"",des?"descanso "+des:""].filter(Boolean).join(" · ")});
+    addOpen=false;save();render();return;
+  }
   if(ed){edit(a,b.closest(".card").dataset.id);return}
   const row=b.closest(".row"),k=row.dataset.k,l=S.logs[k]=S.logs[k]||{};
   if(a=="u"){l.u=(l.u||S.u)=="kg"?"lb":"kg";save();render();return}
