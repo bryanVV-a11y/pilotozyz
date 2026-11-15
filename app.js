@@ -10,6 +10,7 @@ let S={wk:1,logs:{},hist:[]};
 try{Object.assign(S,JSON.parse(localStorage.getItem(K)||"{}"))}catch(e){}
 const mk=()=>{const p={};for(const d in D)p[d]=D[d].x.map((e,i)=>({id:String(i),n:e[0],s:e[1],r:e[2],t:e[3]||""}));return p};
 if(!S.plan)S.plan=mk();for(const d in D)if(!S.plan[d])S.plan[d]=[];if(!S.u)S.u="kg";
+if(!S.rutina&&Object.values(S.plan).some(p=>p.length))S.rutina={nombre:"Mi rutina",adaptada:""};
 for(const k in S.logs){const l=S.logs[k];if(!l.u&&(l.w||l.d))l.u=S.u}
 let ed=false;
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
