@@ -10,7 +10,20 @@ let S={wk:1,logs:{},hist:[]};
 try{Object.assign(S,JSON.parse(localStorage.getItem(K)||"{}"))}catch(e){}
 const mk=()=>{const p={};for(const d in D)p[d]=D[d].x.map((e,i)=>({id:String(i),n:e[0],s:e[1],r:e[2],t:e[3]||""}));return p};
 if(!S.plan)S.plan=mk();for(const d in D)if(!S.plan[d])S.plan[d]=[];if(!S.u)S.u="kg";
-if(!S.rutina&&S.hist&&S.hist.length){const ult=Math.max(...S.hist.map(r=>+r.semana));const filas=S.hist.filter(r=>+r.semana===ult);for(const d in D){const dn=D[d].n;const mapa={};const orden=[];filas.filter(r=>r.dia===dn).forEach(r=>{const n=(r.ejercicio||"").trim();if(!mapa[n]){mapa[n]={n:n,s:0};orden.push(mapa[n])}mapa[n].s=Math.max(mapa[n].s,+r.serie||1)});S.plan[d]=orden.map((e,i)=>({id:String(i),n:e.n,s:Math.min(10,e.s),r:"",t:""}))}S.rutina={nombre:"Mi rutina",adaptada:""};}else if(!S.rutina&&Object.values(S.plan).some(p=>p.length))S.rutina={nombre:"Mi rutina",adaptada:""};
+if(!S.rutina&&S.hist&&S.hist.length){
+for(const d in D){
+const dn=D[d].n;
+const del=S.hist.filter(r=>r.dia===dn);
+if(!del.length){S.plan[d]=[];continue}
+const ult=Math.max(...del.map(r=>+r.semana));
+const filas=del.filter(r=>+r.semana===ult);
+const mapa={};const orden=[];
+filas.forEach(r=>{const n=(r.ejercicio||"").trim();if(!mapa[n]){mapa[n]={n:n,s:0};orden.push(mapa[n])}mapa[n].s=Math.max(mapa[n].s,+r.serie||1)});
+S.plan[d]=orden.map((e,i)=>({id:String(i),n:e.n,s:Math.min(10,e.s),r:"",t:""}));
+}
+S.rutina={nombre:"Mi rutina",adaptada:""};
+}
+else if(!S.rutina&&Object.values(S.plan).some(p=>p.length))S.rutina={nombre:"Mi rutina",adaptada:""};
 for(const k in S.logs){const l=S.logs[k];if(!l.u&&(l.w||l.d))l.u=S.u}
 let ed=false;
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
