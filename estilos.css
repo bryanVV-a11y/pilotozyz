@@ -159,3 +159,10 @@ body::before{
     radial-gradient(ellipse 70% 55% at 50% 105%, rgba(var(--glow),.28), transparent 70%),
     repeating-linear-gradient(90deg, rgba(var(--glow),.05) 0 1px, transparent 1px 34px);
 }
+/* Inicio: objetivo, experiencia y frecuencia */
+#ini-perfil{position:fixed;inset:0;background:var(--bg);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+#ini-perfil[hidden]{display:none}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.sub2{font-size:16px;margin:18px 0 0}
+#ini-sig{width:100%;min-height:52px;font-size:17px;font-weight:700;background:var(--tx);color:#000;border:0;border-radius:14px;margin-top:10px}
+#ini-sig:disabled{opacity:.4}
