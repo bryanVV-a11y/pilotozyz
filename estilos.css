@@ -166,3 +166,25 @@ body::before{
 .sub2{font-size:16px;margin:18px 0 0}
 #ini-sig{width:100%;min-height:52px;font-size:17px;font-weight:700;background:var(--tx);color:#000;border:0;border-radius:14px;margin-top:10px}
 #ini-sig:disabled{opacity:.4}
+
+/* ---- Morado como color característico ---- */
+:root{--acc:139,92,246}
+body:has(#prog:not([hidden])){--acc:198,244,50}
+#dn{color:#C4B5FD}
+.card{border-top:2px solid rgba(var(--acc),.7)}
+#tabs button.on{background:rgb(var(--acc));border-color:rgb(var(--acc));color:#fff}
+#tabs button.on small{color:rgba(255,255,255,.85)}
+.dchip.on{background:rgb(var(--acc));border-color:rgb(var(--acc));color:#fff}
+.pri,#ini-ok,#ini-sig,#bib-aplicar{background:rgb(var(--acc));color:#fff}
+.row.done .ck{background:rgb(var(--acc));border-color:rgb(var(--acc));color:#fff}
+.ub{background:rgb(var(--acc));color:#fff}
+.chip{background:rgb(var(--acc));color:#fff}
+.chip.alt{background:rgba(var(--acc),.18);color:#fff;border:1px solid rgba(var(--acc),.6)}
+
+/* Brillo de fondo más vibrante */
+body::before{
+  background:
+    radial-gradient(ellipse 85% 60% at 50% 115%, rgba(var(--glow),.55), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 100% 0%, rgba(var(--glow),.25), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(var(--glow),.07) 0 1px, transparent 1px 34px);
+}
